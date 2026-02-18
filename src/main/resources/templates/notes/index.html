@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>My Notes</title>
+    <style>
+        body { font-family: sans-serif; background: #f0f2f5; margin: 0; }
+        .navbar { background: #2d3748; color: white; padding: 14px 24px;
+                  display: flex; justify-content: space-between; align-items: center; }
+        .navbar h1 { font-size: 1.3rem; margin: 0; }
+        .navbar a { color: #90cdf4; text-decoration: none; }
+        .container { max-width: 860px; margin: 30px auto; padding: 0 16px; }
+        .card { background: white; border-radius: 10px; padding: 20px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 14px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px;
+               cursor: pointer; font-size: 0.9rem; text-decoration: none;
+               display: inline-block; }
+        .btn-primary { background: #4299e1; color: white; }
+        .btn-danger  { background: #fc8181; color: white; }
+        .btn-edit    { background: #68d391; color: white; }
+        .btn:hover   { opacity: 0.85; }
+        .user-bar { display: flex; gap: 10px; align-items: center;
+                    background: white; padding: 16px 20px; border-radius: 10px;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        .user-bar input { padding: 8px 12px; border: 1px solid #cbd5e0;
+                          border-radius: 6px; font-size: 0.9rem; width: 260px; }
+        .page-header { display: flex; justify-content: space-between;
+                       align-items: center; margin-bottom: 16px; }
+        .note-title   { font-size: 1.05rem; font-weight: 700; margin-bottom: 6px; }
+        .note-content { color: #555; margin-bottom: 8px; font-size: 0.9rem; }
+        .note-meta    { font-size: 0.78rem; color: #a0aec0; margin-bottom: 10px; }
+        .actions      { display: flex; gap: 8px; }
+        .alert-success { background: #c6f6d5; color: #276749; padding: 12px 16px;
+                         border-radius: 6px; margin-bottom: 16px; }
+        .alert-error   { background: #fed7d7; color: #9b2335; padding: 12px 16px;
+                         border-radius: 6px; margin-bottom: 16px; }
+        .empty { text-align: center; color: #a0aec0; padding: 40px; }
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <h1>📒 Note App</h1>
+    <a th:href="@{/notes/new}">+ New Note</a>
+</nav>
+
+<div class="container">
+
+    <div class="alert-success" th:if="${message}" th:text="${message}"></div>
+    <div class="alert-error"   th:if="${error}"   th:text="${error}"></div>
+
+    <!-- User ID bar -->
+    <div class="user-bar">
+        <label><b>User ID:</b></label>
+        <input type="text" id="userIdInput" placeholder="Enter your userId..." th:value="${userId}"/>
+        <button class="btn btn-primary" onclick="loadNotes()">Load Notes</button>
+    </div>
+
+    <!-- Header -->
+    <div class="page-header">
+        <h2>My Notes</h2>
+        <a class="btn btn-primary" th:href="@{/notes/new}">+ New Note</a>
+    </div>
+
+    <!-- Notes list -->
+    <div th:if="${notes != null and not #lists.isEmpty(notes)}">
+        <div class="card" th:each="note : ${notes}">
+            <div class="note-title"   th:text="${note.title}">Title</div>
+            <div class="note-content" th:text="${note.content}">Content</div>
+            <div class="note-meta">
+                Created: <span th:text="${note.createdAt}"></span> |
+                Updated: <span th:text="${note.updatedAt}"></span>
+            </div>
+            <div class="actions">
+                <a class="btn btn-edit"
+                   th:href="@{/notes/edit/{id}(id=${note.id}, userId=${userId})}">
+                    ✏️ Edit
+                </a>
+                <form th:action="@{/notes/delete/{id}(id=${note.id})}" method="post"
+                      onsubmit="return confirm('Delete this note?')">
+                    <input type="hidden" name="userId" th:value="${userId}"/>
+                    <button class="btn btn-danger" type="submit">🗑️ Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Empty state -->
+    <div class="card empty" th:if="${notes == null or #lists.isEmpty(notes)}">
+        <p>No notes yet. Enter your User ID above and click Load Notes.</p>
+    </div>
+
+</div>
+
+<script>
+    function loadNotes() {
+        const userId = document.getElementById('userIdInput').value.trim();
+        if (userId) window.location.href = '/notes?userId=' + encodeURIComponent(userId);
+        else alert('Please enter a userId first.');
+    }
+</script>
+</body>
+</html>
